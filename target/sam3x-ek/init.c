@@ -25,38 +25,33 @@
 #include <trace.h>
 #include <target.h>
 #include <compiler.h>
+#include <dev/driver.h>
+#include <platform/spi.h>
+#include <platform/twi.h>
+
+static const struct platform_spi_config spi0_config = {
+	.regs = SPI0,
+	.id = ID_SPI0,
+	.clk_rate = 1000000,
+};
+DEVICE_INSTANCE(spi, spi0, &spi0_config);
+
+static const struct platform_twi_config twi0_config = {
+	.regs = TWI0,
+	.id = ID_TWI0,
+	.speed = 100000,
+};
+DEVICE_INSTANCE(twi, twi0, &twi0_config);
 
 void target_early_init(void)
 {
-#if 0
-	/* configure the usart3 pins */
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
-
-	GPIO_PinRemapConfig(GPIO_FullRemap_USART3, ENABLE);
-
-	GPIO_InitTypeDef init;
-	init.GPIO_Pin = GPIO_Pin_8;
-	init.GPIO_Speed = GPIO_Speed_50MHz;
-	init.GPIO_Mode = GPIO_Mode_AF_PP;
-	GPIO_Init(GPIOD, &init);
-
-	init.GPIO_Pin = GPIO_Pin_9;
-	init.GPIO_Speed = GPIO_Speed_50MHz;
-	init.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-	GPIO_Init(GPIOD, &init);
-
-	stm32_debug_early_init();
-#endif
 }
 
 void target_init(void)
 {
 	TRACE_ENTRY;
 
-#if 0
-	stm32_debug_init();
-#endif
+	device_init_all();
 
 	TRACE_EXIT;
 }
