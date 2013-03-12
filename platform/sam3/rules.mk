@@ -29,6 +29,8 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/debug.c \
 	$(LOCAL_DIR)/vectab.c \
 	$(LOCAL_DIR)/timer.c \
+	$(LOCAL_DIR)/spi.c \
+	$(LOCAL_DIR)/twi.c \
 
 #	$(LOCAL_DIR)/debug.c \
 	$(LOCAL_DIR)/interrupts.c \
