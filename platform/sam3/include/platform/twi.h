@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Travis Geiselbrecht
+ * Copyright (c) 2013 Corey Tabaka
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files
@@ -20,31 +20,17 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#include <debug.h>
-#include <compiler.h>
+
+#ifndef __PLATFORM_TWI_H
+#define __PLATFORM_TWI_H
+
 #include <sam3x8h.h>
 
-extern void sam3_uart_irq(void);
-extern void sam3_tc0_irq(void);
-extern void sam3_spi0_irq(void);
-
-/* appended to the end of the main vector table */
-const void * const __SECTION(".text.boot.vectab2") vectab2[] = {
-	[UART_IRQn] = sam3_uart_irq,
-	[TC0_IRQn] = sam3_tc0_irq,
-	[SPI0_IRQn] = sam3_spi0_irq,
-#if 0
-	[TIM2_IRQn] = stm32_tim2_irq,
-	[TIM3_IRQn] = stm32_tim3_irq,
-	[TIM4_IRQn] = stm32_tim4_irq,
-	[TIM5_IRQn] = stm32_tim5_irq,
-	[TIM6_IRQn] = stm32_tim6_irq,
-	[TIM7_IRQn] = stm32_tim7_irq,
-
-	[USART1_IRQn] = stm32_USART1_IRQ,
-	[USART2_IRQn] = stm32_USART2_IRQ,
-	[USART3_IRQn] = stm32_USART3_IRQ,
-#endif
-	[NUM_IRQn] = 0,
+struct platform_twi_config {
+	Twi *regs;	
+	int id;
+	int speed;
 };
+
+#endif
 
