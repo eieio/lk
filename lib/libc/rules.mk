@@ -11,14 +11,13 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/stdio.c \
 	$(LOCAL_DIR)/eabi.c
 
-
-include $(LOCAL_DIR)/string/rules.mk
-
 ifeq ($(WITH_CPP_SUPPORT),true)
 MODULE_SRCS += \
-	$(LOCAL_DIR)/new.c \
+	$(LOCAL_DIR)/new.cpp \
 	$(LOCAL_DIR)/atexit.c \
 	$(LOCAL_DIR)/pure_virtual.cpp
 endif
+
+include $(LOCAL_DIR)/string/rules.mk
 
 include make/module.mk

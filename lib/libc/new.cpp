@@ -22,16 +22,16 @@
  */
 #include <new.h>
 #include <debug.h>
-#include <kernel/heap.h>
+#include <malloc.h>
 
 void *operator new(size_t s)
 {
-	return heap_alloc(s, 0);
+	return malloc(s);
 }
 
 void *operator new[](size_t s)
 {
-	return heap_alloc(s, 0);
+	return malloc(s);
 }
 
 void *operator new(size_t , void *p)
@@ -41,11 +41,11 @@ void *operator new(size_t , void *p)
 
 void operator delete(void *p)
 {
-	return heap_free(p);
+	return free(p);
 }
 
 void operator delete[](void *p)
 {
-	return heap_free(p);
+	return free(p);
 }
 

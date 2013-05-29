@@ -23,7 +23,7 @@
 #ifndef __NEW_H
 #define __NEW_H
 
-#include <sys/types.h>
+#include <stddef.h>
 
 void *operator new(size_t);
 void *operator new(size_t, void *ptr);
