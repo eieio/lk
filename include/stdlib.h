@@ -29,11 +29,17 @@
 #include <printf.h>
 #include <endian.h>
 #include <arch/defines.h>
+#include <compiler.h>
+
+__BEGIN_CDECLS
 
 int atoi(const char *num);
 unsigned int atoui(const char *num);
 long atol(const char *num);
 unsigned long atoul(const char *num);
+int abs(int value);
+
+__END_CDECLS
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
