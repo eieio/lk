@@ -23,6 +23,7 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/ide.c \
 	$(LOCAL_DIR)/uart.c \
 	$(LOCAL_DIR)/pcnet.c \
+	$(LOCAL_DIR)/vmware_svga.c \
 
 LINKER_SCRIPT += \
 	$(BUILDDIR)/kernel.ld
