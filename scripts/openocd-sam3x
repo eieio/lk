@@ -1,0 +1,1 @@
+sudo /usr/local/bin/openocd --file /usr/local/share/openocd/scripts/interface/jlink.cfg --file /usr/local/share/openocd/scripts/board/atmel_sam3x_ek.cfg  -d
