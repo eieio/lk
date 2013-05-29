@@ -16,7 +16,8 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/mmu.c \
 	$(LOCAL_DIR)/faults.c \
 	$(LOCAL_DIR)/descriptor.c \
-	$(LOCAL_DIR)/fpu.c
+	$(LOCAL_DIR)/fpu.c \
+	$(LOCAL_DIR)/setjmp.S \
 
 # set the default toolchain to x86 elf and set a #define
 TOOLCHAIN_PREFIX ?= i386-elf-
