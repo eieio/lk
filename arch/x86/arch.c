@@ -54,10 +54,12 @@ void arch_early_init(void)
 	set_global_desc(TSS_SELECTOR, &system_tss, sizeof(tss_t), 1, 0, 0, SEG_TYPE_TSS, 0, 0);
 
 	x86_ltr(TSS_SELECTOR);
+
+	clear_in_cr0(X86_CR0_MP | X86_CR0_EM);
+	set_in_cr4(X86_CR4_OSFXSR);
 }
 
 void arch_init(void)
 {
 }
-
 

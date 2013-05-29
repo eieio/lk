@@ -40,6 +40,8 @@ struct context_switch_frame {
 };
 
 extern void x86_context_switch(addr_t *old_sp, addr_t new_sp);
+extern void fpu_thread_switch(thread_t *to);
+extern void fpu_thread_exit(thread_t *t);
 
 static void initial_thread_func(void) __NO_RETURN;
 static void initial_thread_func(void)
@@ -55,6 +57,8 @@ static void initial_thread_func(void)
 	ret = current_thread->entry(current_thread->arg);
 
 //	dprintf("initial_thread_func: thread %p exiting with %d\n", current_thread, ret);
+
+	fpu_thread_exit(current_thread);
 
 	thread_exit(ret);
 }
@@ -83,12 +87,15 @@ void arch_thread_initialize(thread_t *t)
 
 	// set the stack pointer
 	t->arch.esp = (vaddr_t)frame;
+	t->arch.fpu_context = NULL;
 }
 
 void arch_context_switch(thread_t *oldthread, thread_t *newthread)
 {
 	//dprintf(DEBUG, "arch_context_switch: old %p (%s), new %p (%s)\n", oldthread, oldthread->name, newthread, newthread->name);
 	
+	fpu_thread_switch(newthread);
+
 	__asm__ __volatile__ (
 		"pushl $1f			\n\t"
 		"pushf				\n\t"

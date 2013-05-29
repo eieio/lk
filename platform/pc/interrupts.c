@@ -34,6 +34,7 @@
 void x86_gpf_handler(struct x86_iframe *frame);
 void x86_invop_handler(struct x86_iframe *frame);
 void x86_unhandled_exception(struct x86_iframe *frame);
+void x86_fpu_exception(struct x86_iframe *frame);
 
 #define PIC1 0x20
 #define PIC2 0xA0
@@ -215,9 +216,12 @@ enum handler_return platform_irq(struct x86_iframe *frame)
 			x86_invop_handler(frame);
 			break;
 
+		case INT_DEV_NA_EX:
+			x86_fpu_exception(frame);
+			break;
+
 		case INT_DIVIDE_0:
 		case INT_DEBUG_EX:
-		case INT_DEV_NA_EX:
 		case INT_PAGE_FAULT:
 		case INT_STACK_FAULT:
 		case 3:

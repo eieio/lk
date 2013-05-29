@@ -97,6 +97,38 @@ static inline void clear_in_cr0(uint32_t mask)
 		: "ax");
 }
 
+#define X86_CR4_VME        0x0001    /* enable vm86 extensions */
+#define X86_CR4_PVI        0x0002    /* virtual interrupts flag enable */
+#define X86_CR4_TSD        0x0004    /* disable time stamp at ipl 3 */
+#define X86_CR4_DE         0x0008    /* enable debugging extensions */
+#define X86_CR4_PSE        0x0010    /* enable page size extensions */
+#define X86_CR4_PAE        0x0020    /* enable physical address extensions */
+#define X86_CR4_MCE        0x0040    /* Machine check enable */
+#define X86_CR4_PGE        0x0080    /* enable global pages */
+#define X86_CR4_PCE        0x0100    /* enable performance counters at ipl 3 */
+#define X86_CR4_OSFXSR     0x0200    /* enable fast FPU save and restore */
+#define X86_CR4_OSXMMEXCP  0x0400    /* enable unmasked SSE exceptions */
+
+static inline void set_in_cr4(uint32_t mask)
+{
+	__asm__ __volatile__ (
+		"movl %%cr4,%%eax	\n\t"
+		"orl %0,%%eax		\n\t"
+		"movl %%eax,%%cr4	\n\t"
+		: : "irg" (mask)
+		:"ax");
+}
+
+static inline void clear_in_cr4(uint32_t mask)
+{
+	__asm__ __volatile__ (
+		"movl %%cr4, %%eax	\n\t"
+		"andl %0, %%eax		\n\t"
+		"movl %%eax, %%cr4	\n\t"
+		: : "irg" (~mask)
+		: "ax");
+}
+
 static inline void x86_clts(void) {__asm__ __volatile__ ("clts"); }
 static inline void x86_hlt(void) {__asm__ __volatile__ ("hlt"); }
 static inline void x86_sti(void) {__asm__ __volatile__ ("sti"); }
