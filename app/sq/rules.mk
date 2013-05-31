@@ -6,9 +6,11 @@ MODULE := $(LOCAL_DIR)
 
 MODULES += \
 	lib/squirrel \
+	lib/agg \
 
 MODULE_SRCS += \
-	$(LOCAL_DIR)/main.c 
+	$(LOCAL_DIR)/main.c \
+	$(LOCAL_DIR)/gfx.cpp \
 
 include make/module.mk
 
