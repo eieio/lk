@@ -2,6 +2,9 @@ LOCAL_DIR := $(GET_LOCAL_DIR)
 
 MODULE := $(LOCAL_DIR)
 
+MODULES += \
+	lib/libm \
+
 GLOBAL_INCLUDES += $(LOCAL_DIR)/include
 
 MODULE_SRCS += \
