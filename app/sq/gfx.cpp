@@ -334,7 +334,7 @@ static SQInteger _gfx_updateRegion(HSQUIRRELVM v)
 #define _DECL_FUNC(name, nparams, pmask) {_SC(#name), _gfx_##name, nparams, pmask}
 static SQRegFunction gfxlib_funcs[]={
 	_DECL_FUNC(update, 1, _SC(".")),
-	_DECL_FUNC(updateRegion, 1, _SC(".nnnn")),
+	_DECL_FUNC(updateRegion, 5, _SC(".nnnn")),
 	{0, 0}
 };
 #undef _DECL_FUNC

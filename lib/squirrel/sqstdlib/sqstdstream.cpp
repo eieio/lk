@@ -34,6 +34,26 @@ SQInteger _stream_readblob(HSQUIRRELVM v)
 	return 1;
 }
 
+SQInteger _stream_readstring(HSQUIRRELVM v)
+{
+	SETUP_STREAM(v);
+	SQUserPointer data;
+	SQInteger size, res;
+
+	sq_getinteger(v, 2, &size);
+
+	if (size > self->Len())
+		size = self->Len();
+	
+	data = sq_getscratchpad(v, size);
+	res = self->Read(data, size);
+	if (res <= 0)
+		return sq_throwerror(v, _SC("no data left to read"));
+	
+	sq_pushstring(v, (SQChar *) data, res);	
+	return 1;
+}
+
 #define SAFE_READN(ptr,len) { \
 	if(self->Read(ptr,len) != len) return sq_throwerror(v,_SC("io error")); \
 	}
@@ -108,6 +128,23 @@ SQInteger _stream_writeblob(HSQUIRRELVM v)
 	if(self->Write(data,size) != size)
 		return sq_throwerror(v,_SC("io error"));
 	sq_pushinteger(v,size);
+	return 1;
+}
+
+SQInteger _stream_writestring(HSQUIRRELVM v)
+{
+	const SQChar *str;
+	SQInteger size;
+
+	SETUP_STREAM(v);
+
+	sq_getstring(v, 2, &str);
+	size = sq_getsize(v, 2);
+
+	if (self->Write((void *) str, size) != size)
+		return sq_throwerror(v, _SC("io error"));
+
+	sq_pushinteger(v, size);
 	return 1;
 }
 
@@ -240,8 +277,10 @@ SQInteger _stream_eos(HSQUIRRELVM v)
 
 static SQRegFunction _stream_methods[] = {
 	_DECL_STREAM_FUNC(readblob,2,_SC("xn")),
+	_DECL_STREAM_FUNC(readstring,2,_SC("xn")),
 	_DECL_STREAM_FUNC(readn,2,_SC("xn")),
 	_DECL_STREAM_FUNC(writeblob,-2,_SC("xx")),
+	_DECL_STREAM_FUNC(writestring,2,_SC("xs")),
 	_DECL_STREAM_FUNC(writen,3,_SC("xnn")),
 	_DECL_STREAM_FUNC(seek,-2,_SC("xnn")),
 	_DECL_STREAM_FUNC(tell,1,_SC("x")),

@@ -25,4 +25,6 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/sqstdlib/sqstdstream.cpp \
 	$(LOCAL_DIR)/sqstdlib/sqstdio.cpp \
 
+WITH_CPP_SUPPORT := true
+
 include make/module.mk

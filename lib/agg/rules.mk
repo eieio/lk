@@ -13,4 +13,6 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/agg_rounded_rect.cpp \
 	$(LOCAL_DIR)/agg_arc.cpp \
 
+WITH_CPP_SUPPORT := true
+
 include make/module.mk

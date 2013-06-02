@@ -7,8 +7,9 @@ MODULES += \
 	app/tests \
 	app/shell \
 	app/pcitests \
-	app/displaytest \
 	app/sq \
+
+WITH_CPP_SUPPORT := true
 
 # extra rules to copy the pc-x86.conf file to the build dir
 #$(BUILDDIR)/pc-x86.conf: $(LOCAL_DIR)/pc-x86.conf
