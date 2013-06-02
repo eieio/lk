@@ -9,7 +9,10 @@ MODULE_SRCS += \
 	$(LOCAL_DIR)/malloc.c \
 	$(LOCAL_DIR)/rand.c \
 	$(LOCAL_DIR)/stdio.c \
-	$(LOCAL_DIR)/eabi.c
+	$(LOCAL_DIR)/eabi.c \
+	$(LOCAL_DIR)/strtod.c \
+	$(LOCAL_DIR)/strtol.c \
+	$(LOCAL_DIR)/strtoul.c \
 
 ifeq ($(WITH_CPP_SUPPORT),true)
 MODULE_SRCS += \

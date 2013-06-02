@@ -23,7 +23,16 @@
 #ifndef __RAND_H
 #define __RAND_H
 
+#define RAND_MAX 0xffffffff
+
+#include <compiler.h>
+
+__BEGIN_CDECLS
+
 int rand(void);
+void srand(unsigned seed);
+
+__END_CDECLS
 
 #endif
 

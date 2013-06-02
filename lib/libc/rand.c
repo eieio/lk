@@ -28,3 +28,9 @@ int rand(void)
 {
 	return (randseed = randseed * 12345 + 17);
 }
+
+void srand(unsigned seed)
+{
+	randseed = seed;
+}
+

@@ -30,6 +30,7 @@
 #include <endian.h>
 #include <arch/defines.h>
 #include <compiler.h>
+#include <rand.h>
 
 __BEGIN_CDECLS
 
@@ -38,6 +39,10 @@ unsigned int atoui(const char *num);
 long atol(const char *num);
 unsigned long atoul(const char *num);
 int abs(int value);
+
+double strtod(const char *s, char **scan_end);
+long strtol(const char *nptr, char **endptr, int base);
+unsigned long strtoul(const char *nptr, char **endptr, int base);
 
 __END_CDECLS
 
