@@ -27,6 +27,7 @@
 #include <platform/uart.h>
 #include <platform/ide.h>
 #include <platform/pcnet.h>
+#include <platform/vmware_svga.h>
 #include <platform.h>
 #include <malloc.h>
 #include <string.h>
@@ -46,6 +47,16 @@ static const struct platform_uart_config uart0_config = {
 };
 
 DEVICE_INSTANCE(uart, uart0, &uart0_config);
+
+static const struct platform_vmware_svga_config fb0_config = {
+	.default_mode = {
+		.width = 800,
+		.height = 600,
+		.bpp = 32,
+	},
+};
+
+DEVICE_INSTANCE(fb, fb0, &fb0_config);
 
 static const struct platform_ide_config ide0_config = {
 };
@@ -70,5 +81,7 @@ void target_init(void) {
 
 	device_init(device_get_by_name(netif, pcnet0));
 	class_netif_add(device_get_by_name(netif, pcnet0));
+
+	device_init(device_get_by_name(fb, fb0));
 }
 
