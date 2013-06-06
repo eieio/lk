@@ -39,6 +39,7 @@
 
 HSQUIRRELVM sqvm; 
 SQInteger lk_register_gfxlib(HSQUIRRELVM v);
+SQInteger lk_register_syslib(HSQUIRRELVM v);
 
 #if defined(WITH_LIB_CONSOLE)
 #include <lib/console.h>
@@ -99,6 +100,7 @@ static void sq_init(const struct app_descriptor *app)
 	sqstd_register_iolib(sqvm);
 	//sqstd_register_systemlib(sqvm);
 	lk_register_gfxlib(sqvm);
+	lk_register_syslib(sqvm);
 
 	if (SQ_SUCCEEDED(sqstd_dofile(sqvm, _SC("system/vm/init.nut"), SQFalse, SQTrue))) { // also prints syntax errors if any 
 		call_vm(sqvm, _SC("init"));
