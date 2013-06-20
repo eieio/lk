@@ -128,7 +128,15 @@ void hexdump8(const void *ptr, size_t len)
 	for (count = 0 ; count < len; count += 16) {
 		printf("0x%08lx: ", address);
 		for (i=0; i < 16; i++) {
-			printf("0x%02hhx ", *(const uint8_t *)(address + i));
+			printf("%02hhx ", *(const uint8_t *)(address + i));
+		}
+		for (i=0; i < 16; i++) {
+			char c = *(const char *)(address + i);
+			if (isalpha(c)) {
+				printf("%c", c);
+			} else {
+				printf(".");
+			}
 		}
 		printf("\n");
 		address += 16;
