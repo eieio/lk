@@ -80,6 +80,7 @@ int snprintf(char *str, size_t len, const char *fmt, ...)
 #define LEFTFORMATFLAG 0x00000800
 #define LEADZEROFLAG   0x00001000
 #define BLANKPOSFLAG   0x00002000
+#define SKIPNUMERIC    0x00004000
 
 static char *longlong_to_string(char *buf, unsigned long long n, int len, uint flag)
 {
@@ -209,6 +210,8 @@ next_format:
 
 		switch (c) {
 			case '0'...'9':
+				if (flags & SKIPNUMERIC)
+					goto next_format;
 				if (c == '0' && format_num == 0)
 					flags |= LEADZEROFLAG;
 				format_num *= 10;
@@ -216,6 +219,7 @@ next_format:
 				goto next_format;
 			case '.':
 				/* XXX for now eat numeric formatting */
+				flags |= SKIPNUMERIC;
 				goto next_format;
 			case '%':
 				OUTPUT_CHAR('%');
