@@ -24,6 +24,7 @@
 #include <err.h>
 #include <squirrel.h> 
 #include <platform.h>
+#include <platform/keyboard.h>
 #include <kernel/thread.h>
 
 static SQInteger _sys_sleep(HSQUIRRELVM v)
@@ -45,11 +46,34 @@ static SQInteger _sys_getCurrentTime(HSQUIRRELVM v)
 	return 1;
 }
 
+static SQInteger _sys_getKey(HSQUIRRELVM v)
+{
+	SQInteger nargs;
+	SQBool wait = false;
+	int ret;
+	char c;
+
+	nargs = sq_gettop(v);
+	
+	if (nargs == 2)
+		sq_getbool(v, 2, &wait);
+	
+	ret = platform_read_key(&c, wait);
+
+	if (ret)
+		sq_pushstring(v, &c, 1);
+	else
+		sq_pushnull(v);
+
+	return 1;
+}
+
 #define _DECL_FUNC(name, nparams, pmask) {_SC(#name), _sys_##name, nparams, pmask}
 static SQRegFunction syslib_funcs[] = {
 	_DECL_FUNC(sleep, 2, _SC(".n")),
 	_DECL_FUNC(getCurrentTime, 1, _SC(".")),
-	{0, 0}
+	_DECL_FUNC(getKey, -1, _SC(".b")),
+	{0, 0, 0, 0}
 };
 #undef _DECL_FUNC
 

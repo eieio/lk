@@ -35,7 +35,7 @@
 #include <vmware/svga_reg.h>
 #include <vmware/vm_device_version.h>
 
-#define LOCAL_TRACE 1
+#define LOCAL_TRACE 0
 
 struct vmware_svga_state {
 	uint16_t index_reg;

@@ -50,8 +50,8 @@ DEVICE_INSTANCE(uart, uart0, &uart0_config);
 
 static const struct platform_vmware_svga_config fb0_config = {
 	.default_mode = {
-		.width = 800,
-		.height = 600,
+		.width = 640,
+		.height = 360,
 		.bpp = 32,
 	},
 };

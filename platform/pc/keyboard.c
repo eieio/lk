@@ -302,11 +302,11 @@ static enum handler_return i8042_interrupt(void *arg)
 	return INT_NO_RESCHEDULE;
 }
 
-int platform_read_key(char *c)
+int platform_read_key(char *c, bool wait)
 {
 	ssize_t len;
 
-	len = cbuf_read_char(&key_buf, c, true);
+	len = cbuf_read_char(&key_buf, c, wait);
 	return len;
 }
 

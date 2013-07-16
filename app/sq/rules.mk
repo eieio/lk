@@ -11,6 +11,7 @@ MODULES += \
 MODULE_SRCS += \
 	$(LOCAL_DIR)/main.c \
 	$(LOCAL_DIR)/gfx.cpp \
+	$(LOCAL_DIR)/net.cpp \
 	$(LOCAL_DIR)/sys.c \
 
 include make/module.mk

@@ -231,6 +231,8 @@ enum handler_return platform_irq(struct x86_iframe *frame)
 		default:
 			if (int_handler_table[vector].handler)
 				ret = int_handler_table[vector].handler(int_handler_table[vector].arg);
+			else
+				dprintf(DEBUG, "Spurrious interrupt: %u\n", vector);
 	}
 
 	// ack the interrupt

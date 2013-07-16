@@ -23,8 +23,10 @@
 #ifndef __PLATFORM_KEYBOARD_H
 #define __PLATFORM_KEYBOARD_H
 
+#include <stdbool.h>
+
 void platform_init_keyboard(void);
 
-int platform_read_key(char *c);
+int platform_read_key(char *c, bool wait);
 
 #endif

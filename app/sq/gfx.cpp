@@ -81,22 +81,30 @@ class Surface
 	pixfmt pixf;
 	base_ren_type rb;
 	agg::rgba color;
+	glyph_gen glyph;
 
 	public:
 	Surface(void *buffer, unsigned width, unsigned height, unsigned scan);
 	~Surface(void);
 
 	void setColor(float r, float g, float b, float a);
-	void drawString(const char *str, int x, int y);
 	void drawRect(float x, float y, float w, float h, float radius, float stroke);
 	void fillRect(float x, float y, float w, float h, float radius);
 
 	void getSize(unsigned *w, unsigned *h);
+
+	void drawString(const char *str, int x, int y);
+
+	float getStringWidth(const char *str);
+	float getFontHeight(void);
+	float getFontBaseLine(void);
 };
 
 Surface::Surface(void *buffer, unsigned width, unsigned height, unsigned scan) :
-		buf((uint8_t *) buffer, width, height, scan), pixf(buf), rb(pixf), color()
+		buf((uint8_t *) buffer, width, height, scan), pixf(buf), rb(pixf), color(), glyph(0)
 {
+	agg::int8u *font = (agg::int8u *) agg::verdana14;
+	glyph.font(font);
 }
 
 Surface::~Surface(void)
@@ -110,13 +118,24 @@ void Surface::setColor(float r, float g, float b, float a)
 
 void Surface::drawString(const char *str, int x, int y)
 {
-	agg::int8u *font = (agg::int8u *) agg::verdana14;
-
-	glyph_gen glyph(0);
-	glyph.font(font);
 	agg::renderer_raster_htext_solid<base_ren_type, glyph_gen> rt(rb, glyph);
 	rt.color(color);
 	rt.render_text(x, y, str, true);
+}
+
+float Surface::getStringWidth(const char *str)
+{
+	return glyph.width(str);
+}
+
+float Surface::getFontHeight(void)
+{
+	return glyph.height();
+}
+
+float Surface::getFontBaseLine(void)
+{
+	return glyph.base_line();
 }
 
 void Surface::drawRect(float x, float y, float w, float h, float radius, float stroke)
@@ -236,6 +255,42 @@ static SQInteger _surface_drawString(HSQUIRRELVM v)
 	return 0;
 }
 
+static SQInteger _surface_getStringWidth(HSQUIRRELVM v)
+{
+	SETUP_SURFACE(v);
+	const SQChar *str;
+	float width;
+
+	sq_getstring(v, 2, &str);
+
+	width = self->getStringWidth(str);
+
+	sq_pushfloat(v, width);
+	return 1;
+}
+
+static SQInteger _surface_getFontHeight(HSQUIRRELVM v)
+{
+	SETUP_SURFACE(v);
+	float height;
+
+	height = self->getFontHeight();
+
+	sq_pushfloat(v, height);
+	return 1;
+}
+
+static SQInteger _surface_getFontBaseLine(HSQUIRRELVM v)
+{
+	SETUP_SURFACE(v);
+	float baseline;
+
+	baseline = self->getFontBaseLine();
+
+	sq_pushfloat(v, baseline);
+	return 1;
+}
+
 static SQInteger _surface_drawRect(HSQUIRRELVM v)
 {
 	SETUP_SURFACE(v);
@@ -298,6 +353,9 @@ static SQRegFunction _surface_methods[] = {
 	_DECL_SURFACE_FUNC(constructor, 1, _SC("x")),
 	_DECL_SURFACE_FUNC(setColor, 5, _SC("xnnnn")),
 	_DECL_SURFACE_FUNC(drawString, 4, _SC("xsnn")),
+	_DECL_SURFACE_FUNC(getStringWidth, 2, _SC("xs")),
+	_DECL_SURFACE_FUNC(getFontHeight, 1, _SC("x")),
+	_DECL_SURFACE_FUNC(getFontBaseLine, 1, _SC("x")),
 	_DECL_SURFACE_FUNC(drawRect, 7, _SC("xnnnnnn")),
 	_DECL_SURFACE_FUNC(fillRect, 6, _SC("xnnnnn")),
 	_DECL_SURFACE_FUNC(fillRect, 6, _SC("xnnnnn")),

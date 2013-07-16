@@ -89,23 +89,12 @@ int uart_getc(char *c, bool wait)
 
 void platform_dputc(char c)
 {
-#if WITH_CGA_CONSOLE
-	cputc(c);
-#else
 	uart_putc(c);
-#endif
 }
 
 int platform_dgetc(char *c, bool wait)
 {
-#if WITH_CGA_CONSOLE
-	int ret =  platform_read_key(c);
-	//if (ret < 0)
-	//  arch_idle();
-#else
 	int ret = uart_getc(c, wait);
-#endif
-
 	return ret;
 }
 
