@@ -232,7 +232,7 @@ enum handler_return platform_irq(struct x86_iframe *frame)
 			if (int_handler_table[vector].handler)
 				ret = int_handler_table[vector].handler(int_handler_table[vector].arg);
 			else
-				dprintf(DEBUG, "Spurrious interrupt: %u\n", vector);
+				dprintf(CRITICAL, "Spurrious interrupt: %u\n", vector);
 	}
 
 	// ack the interrupt
