@@ -1,0 +1,1 @@
+qemu -kernel build-pc-x86-test/lk.bin -serial stdio -vga vmware -hda hda.img -net nic,model=pcnet -net user,hostfwd=tcp::5555-:80 -net dump -s
