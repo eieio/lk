@@ -85,41 +85,78 @@ void call_vm(HSQUIRRELVM v, const SQChar *s)
 	sq_settop(v, top); //restores the original stack size
 }
 
-static void sq_init(const struct app_descriptor *app)
+HSQUIRRELVM init_vm(const SQChar *filename, const SQChar *init)
 {
-	// early script engine init here
-	sqvm = sq_open(1024);
+	HSQUIRRELVM v;
 
-	sq_pushroottable(sqvm); //push the root table (were the globals of the script will be stored)
+	v = sq_open(1024);
 
-	sqstd_seterrorhandlers(sqvm); //registers the default error handlers
-	sq_setprintfunc(sqvm, printfunc, errorfunc); //sets the print function
+	sq_pushroottable(v); //push the root table (were the globals of the script will be stored)
 
-	sqstd_register_bloblib(sqvm);
-	sqstd_register_mathlib(sqvm);
-	sqstd_register_stringlib(sqvm);
-	sqstd_register_iolib(sqvm);
-	//sqstd_register_systemlib(sqvm);
-	lk_register_gfxlib(sqvm);
-	lk_register_syslib(sqvm);
-	lk_register_netlib(sqvm);
+	sqstd_seterrorhandlers(v); //registers the default error handlers
+	sq_setprintfunc(v, printfunc, errorfunc); //sets the print function
 
-	if (SQ_SUCCEEDED(sqstd_dofile(sqvm, _SC("system/vm/init.nut"), SQFalse, SQTrue))) { // also prints syntax errors if any 
-		call_vm(sqvm, _SC("init"));
+	sqstd_register_bloblib(v);
+	sqstd_register_mathlib(v);
+	sqstd_register_stringlib(v);
+	sqstd_register_iolib(v);
+	//sqstd_register_systemlib(v);
+	lk_register_gfxlib(v);
+	lk_register_syslib(v);
+	lk_register_netlib(v);
+
+	if (SQ_SUCCEEDED(sqstd_dofile(v, filename, SQFalse, SQTrue))) { // also prints syntax errors if any 
+		if (init)
+			call_vm(v, init);
 	} else {
-		printf("Failed to open vm script\n");
+		printf("Failed to open vm script: %s\n", filename);
 	}
 
-	sq_pop(sqvm, 1); //pops the root table
+	sq_pop(v, 1); //pops the root table
+
+	return v;
+}
+
+static void sq_init(const struct app_descriptor *app)
+{
+	sqvm = init_vm(_SC("system/vm/init.nut"), _SC("init"));
 }
 
 static void sq_entry(const struct app_descriptor *app, void *args)
 {
 	call_vm(sqvm, _SC("run"));
+	call_vm(sqvm, _SC("close"));
+
+	sq_close(sqvm);
+	sqvm = NULL;
 }
 
 APP_START(sq)
 	.init = sq_init,
 	.entry = sq_entry,
 APP_END
+
+#if defined(WITH_LIB_CONSOLE)
+#include <lib/console.h>
+
+static int sq_cmd(int argc, const cmd_args *argv)
+{
+	if (argc < 2) {
+usage:
+		printf("Usage: %s <filename>\n", argv[0].str);
+		goto out;
+	}
+	
+	HSQUIRRELVM v = init_vm(argv[1].str, NULL);
+	sq_close(v);
+
+out:
+	return 0;
+}
+
+STATIC_COMMAND_START
+{ "sq", "squirrel vm", &sq_cmd },
+STATIC_COMMAND_END(sq);
+
+#endif
 
