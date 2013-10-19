@@ -100,7 +100,9 @@ void arch_quiesce(void)
 
 void arch_idle(void)
 {
+#if 0
 	__asm__ volatile("wfi");
+#endif
 }
 
 void _arm_cm_set_irqpri(uint32_t pri)

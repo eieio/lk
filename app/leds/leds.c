@@ -21,23 +21,49 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __PLATFORM_SPI_H
-#define __PLATFORM_SPI_H
+#include <app.h>
+#include <string.h>
+#include <stdio.h>
+#include <dev/driver.h>
+#include <dev/class/spi.h>
 
-#include <sam3x8h.h>
+#if defined(WITH_LIB_CONSOLE)
+#include <lib/console.h>
 
-struct platform_spi_config {
-	Spi *regs;	
-	int id;
-	int pcs_decode;
-	int ps;
-	int pcs;
-	int clk_pol;
-	int clk_phase;
-	int clk_rate;
-	int cs[4];
-};
+static int led_cmd(int argc, const cmd_args *argv)
+{
+	int i;
+	struct device *dev = device_get_by_name(spi, spi0);
+	struct spi_transaction txn;
+	uint32_t value;
+
+	txn.flags = SPI_WRITE;
+	txn.tx_buf = &value;
+	txn.len = 3;
+
+	if (argc < 2) {
+		printf("Not enough arguments:\n");
+usage:
+		printf("%s: write <int> [<int>, ...]\n", argv[0].str);
+		goto out;
+	}
+
+	if (!strcmp(argv[1].str, "write")) {
+		for (i=2; i < argc; i++) {
+			value = argv[i].u;
+			class_spi_transaction(dev, &txn, 1);
+		}
+	} else {
+		goto usage;
+	}
+
+out:
+	return 0;
+}
+
+STATIC_COMMAND_START
+{ "leds", "led controls", &led_cmd },
+STATIC_COMMAND_END(leds);
 
 #endif
-
 

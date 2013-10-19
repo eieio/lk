@@ -24,6 +24,7 @@
 #include <reg.h>
 #include <err.h>
 #include <debug.h>
+#include <trace.h>
 #include <assert.h>
 #include <malloc.h>
 #include <compiler.h>

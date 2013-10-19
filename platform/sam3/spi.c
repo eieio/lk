@@ -24,6 +24,7 @@
 #include <reg.h>
 #include <err.h>
 #include <debug.h>
+#include <trace.h>
 #include <assert.h>
 #include <malloc.h>
 #include <lib/cbuf.h>
@@ -35,6 +36,8 @@
 #include <pio/pio.h>
 #include <spi/spi.h>
 #include <pmc/pmc.h>
+
+#define LOCAL_TRACE 0
 
 static struct device_class spi_device_class = {
 	.name = "spi",
@@ -62,6 +65,8 @@ static status_t drv_spi_init(struct device *dev)
 {
 	status_t res = NO_ERROR;
 
+	LTRACE_ENTRY;
+
 	if (!dev)
 		return ERR_INVALID_ARGS;
 
@@ -80,20 +85,39 @@ static status_t drv_spi_init(struct device *dev)
 
 	/* init the peripheral block */
 	pmc_enable_periph_clk(config->id);
+
+	pio_set_peripheral(PIOA, PIO_PERIPH_A, PIO_PA25);
+	pio_set_peripheral(PIOA, PIO_PERIPH_A, PIO_PA26);
+	pio_set_peripheral(PIOA, PIO_PERIPH_A, PIO_PA27);
+	pio_set_peripheral(PIOA, PIO_PERIPH_A, PIO_PA28);
+
 	spi_disable(config->regs);
 	spi_reset(config->regs);
 	spi_set_lastxfer(config->regs);
 	spi_set_master_mode(config->regs);
 	spi_disable_mode_fault_detect(config->regs);
-	spi_set_peripheral_chip_select_value(config->regs, config->cs);
-	spi_set_clock_polarity(config->regs, config->cs, config->clk_pol);
-	spi_set_clock_phase(config->regs, config->cs, config->clk_phase);
-	spi_set_bits_per_transfer(config->regs, config->cs, SPI_CSR_BITS_8_BIT);
-	spi_set_baudrate_div(config->regs, config->cs, (84000000 / config->clk_rate));
+	
+	if (config->ps)
+		spi_set_variable_peripheral_select(config->regs);
+	else
+		spi_set_fixed_peripheral_select(config->regs);
+
+	spi_set_peripheral_chip_select_value(config->regs, config->pcs);
+
+	if (!config->ps) {
+		spi_set_clock_polarity(config->regs, 0, config->clk_pol);
+		spi_set_clock_phase(config->regs, 0, config->clk_phase);
+		spi_set_bits_per_transfer(config->regs, 0, SPI_CSR_BITS_8_BIT);
+		spi_set_baudrate_div(config->regs, 0, (84000000 / config->clk_rate));
+	} else {
+		// TODO: configure each chip select settings
+	}
+
 	//spi_enable_interrupt(config->regs, SPI_IER_RDRF);
 	spi_enable(config->regs);
 
 done:
+	LTRACE_EXIT;
 	return res;
 }
 
@@ -103,6 +127,52 @@ void sam3_spi0_irq(void)
 
 static ssize_t drv_spi_transaction(struct device *dev, struct spi_transaction *txn, size_t count)
 {
+	size_t i, j, total = 0;
+	uint8_t pcs;
+	uint16_t data;
 
+	LTRACE_ENTRY;
+
+	if (!dev)
+		return ERR_INVALID_ARGS;
+
+	if (!dev->config)
+		return ERR_NOT_CONFIGURED;
+
+	const struct platform_spi_config *config = dev->config;
+
+	for (i=0; i < count; i++) {
+		if (txn[i].flags & SPI_CS_ASSERT) {
+			// TODO
+		}
+
+		// validate flags and buffers for this part of the transaction
+		if ((txn[i].flags & SPI_WRITE) && (txn[i].tx_buf == NULL))
+			return ERR_INVALID_ARGS;
+
+		if ((txn[i].flags & SPI_READ) && (txn[i].rx_buf == NULL))
+			return ERR_INVALID_ARGS;
+
+		for (j=0; j < txn[i].len; j++) {
+			if (txn[i].flags & SPI_WRITE)
+				spi_write(config->regs, ((uint8_t *) txn[i].tx_buf)[j], 0, 0);
+
+			while ((spi_read_status(config->regs) & SPI_SR_RDRF) == 0);
+
+			if (txn[i].flags & SPI_READ) {
+				spi_read(config->regs, &data, &pcs);
+				((uint8_t *) txn[i].rx_buf)[j] = data;
+			}
+		}
+
+		total += txn[i].len;
+
+		if (txn[i].flags & SPI_CS_DEASSERT) {
+			// TODO
+		}
+	}
+	
+	LTRACE_EXIT;
+	return total;
 }
 

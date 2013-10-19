@@ -33,6 +33,8 @@ static const struct platform_spi_config spi0_config = {
 	.regs = SPI0,
 	.id = ID_SPI0,
 	.clk_rate = 1000000,
+	.clk_pol = 0,
+	.clk_phase = 1,
 };
 DEVICE_INSTANCE(spi, spi0, &spi0_config);
 
