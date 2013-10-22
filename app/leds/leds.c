@@ -24,6 +24,8 @@
 #include <app.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include <rand.h>
 #include <malloc.h>
 #include <kernel/event.h>
 #include <kernel/mutex.h>
@@ -40,37 +42,108 @@
 static event_t leds_event = EVENT_INITIAL_VALUE(leds_event, false, 0);
 static mutex_t leds_mutex = MUTEX_INITIAL_VALUE(leds_mutex);
 
-struct led_color {
-	char r;
-	char g;
-	char b;
-} __PACKED;
+static struct led_chain *chain;
+
+static char palette[256 * 3];
+
+static bool red_dir;
+static bool green_dir;
+static bool blue_dir;
 
 struct led_chain {
 	size_t len;
-	struct led_color elems[0];
+	char elems[0];
 };
 
 static inline struct led_chain *chain_alloc(size_t count)
 {
-	struct led_chain *chain = malloc(sizeof(struct led_chain) + sizeof(struct led_color) * count);
+	struct led_chain *chain = malloc(sizeof(struct led_chain) + sizeof(char) * count);
 	if (chain)
 		chain->len = count;
 	
 	return chain;
 }
 
+static void palette_rotate_forward(int component, char *pal)
+{
+	int i;
+	char temp;
+
+	temp = pal[0*3 + component];
+	
+	for (i=0; i < 256-1; i++)
+		pal[(i+0)*3 + component] = pal[(i+1)*3 + component];
+	
+	pal[(256-1)*3 + component] = temp;
+}
+
+static void palette_rotate_backward(int component, char *pal)
+{
+	int i;
+	char temp;
+
+	temp = pal[(256-1)*3 + component];
+
+	for (i=256-2; i >= 0; i--)
+		pal[(i+1)*3 + component] = pal[(i+0)*3 + component];
+	
+	pal[0*3 + component] = temp;
+}
+
+
+static void palette_roll(char *pal)
+{
+	if (red_dir)
+		palette_rotate_forward(0, pal);
+	else
+		palette_rotate_backward(0, pal);
+	
+	if (green_dir)
+		palette_rotate_forward(1, pal);
+	else
+		palette_rotate_backward(1, pal);
+	
+	if (blue_dir)
+		palette_rotate_forward(2, pal);
+	else
+		palette_rotate_backward(2, pal);
+}
+
+static void random_invert_direction(void)
+{
+	switch(rand() % (3 * 30)) {
+		case 0:
+			red_dir = !red_dir;
+			break;
+
+		case 1:
+			green_dir = !green_dir;
+			break;
+
+		case 2:
+			blue_dir = !blue_dir;
+			break;
+	}
+}
+
 static inline void chain_update(struct led_chain *chain)
 {
 	struct spi_transaction txn;
+	uint32_t value;
+	unsigned i;
 
 	txn.flags = SPI_WRITE;
-	txn.tx_buf = chain->elems;
+	txn.tx_buf = &value;
 	txn.rx_buf = NULL;
-	txn.len = chain->len * sizeof(struct led_color);
+	txn.len = 3;
 
 	mutex_acquire(&leds_mutex);
-	class_spi_transaction(device_get_by_name(spi, spi0), &txn, 1);
+	for (i=0; i < chain->len; i++) {
+		char *p = palette + chain->elems[i] * 3;
+		value = (int) p[0] << 16 | (int) p[1] << 8 | (int) p[2];
+
+		class_spi_transaction(device_get_by_name(spi, spi0), &txn, 1);
+	}
 	mutex_release(&leds_mutex);
 }
 
@@ -203,28 +276,119 @@ STATIC_COMMAND_START
 { "leds", "led controls", &led_cmd },
 STATIC_COMMAND_END(leds);
 
-static struct led_chain *chain;
-static char palette[256 * 3];
-
 static void leds_init(const struct app_descriptor *app)
 {
 	unsigned i;
 
+#if 0
+	for (i=0; i < 128; i++) {
+		palette[i*3    ] = (31 + i/2) * 2;
+		palette[i*3 + 1] = (31 + i/2) * 2;
+		palette[i*3 + 2] = (31 + i/2) * 2;
+
+		palette[(i + 128)*3    ] = (31 + (127 - i)/2)*2;
+		palette[(i + 128)*3 + 1] = (31 + (127 - i)/2)*2;
+		palette[(i + 128)*3 + 2] = (31 + (127 - i)/2)*2;
+	}
+#elif 0
+	for (i = 0; i < 32; ++i)
+	{
+		palette[ i        * 3    ] = i * 2;
+		palette[(i +  64) * 3    ] = 0;
+		palette[(i + 128) * 3    ] = 0;
+		palette[(i + 192) * 3    ] = i * 2;
+
+		palette[ i        * 3 + 1] = 0;
+		palette[(i +  64) * 3 + 1] = i * 2;
+		palette[(i + 128) * 3 + 1] = 0;
+		palette[(i + 192) * 3 + 1] = i * 2;
+
+		palette[ i        * 3 + 2] = 0;
+		palette[(i +  64) * 3 + 2] = 0;
+		palette[(i + 128) * 3 + 2] = i * 2;
+		palette[(i + 192) * 3 + 2] = i * 2;
+	}
+
+	for (i = 32; i < 64; ++i)
+	{
+		palette[ i        * 3    ] = (63 - i) * 2;
+		palette[(i +  64) * 3    ] = 0;
+		palette[(i + 128) * 3    ] = 0;
+		palette[(i + 192) * 3    ] = (63 - i) * 2;
+
+		palette[ i        * 3 + 1] = 0;
+		palette[(i +  64) * 3 + 1] = (63 - i) * 2;
+		palette[(i + 128) * 3 + 1] = 0;
+		palette[(i + 192) * 3 + 1] = (63 - i) * 2;
+
+		palette[ i        * 3 + 2] = 0;
+		palette[(i +  64) * 3 + 2] = 0;
+		palette[(i + 128) * 3 + 2] = (63 - i) * 2;
+		palette[(i + 192) * 3 + 2] = (63 - i) * 2;
+	}
+#elif 0
+	for (i = 0; i < 128; ++i)
+	{
+		palette[i * 3    ] = i/2;
+		palette[i * 3 + 1] = i/2;
+		palette[i * 3 + 2] = i/2;
+	}
+
+	for (i = 128; i < 256; ++i)
+	{
+		palette[i * 3    ] = (255 - i)/2;
+		palette[i * 3 + 1] = (255 - i)/2;
+		palette[i * 3 + 2] = (255 - i)/2;
+	}
+#elif 1
+	for (i = 0; i < 64; ++i)
+	{
+		palette[i        * 3    ] = i;
+		palette[i        * 3 + 1] = i;
+		palette[i        * 3 + 2] = i;
+
+		palette[(i + 64) * 3    ] = (63 - i);
+		palette[(i + 64) * 3 + 1] = (63 - i);
+		palette[(i + 64) * 3 + 2] = (63 - i);
+	}
+
+	for (i = 128; i < 256; ++i)
+	{
+		palette[i        * 3    ] = 0;
+		palette[i        * 3 + 1] = 0;
+		palette[i        * 3 + 2] = 0;
+	}
+#endif
+
 	chain = chain_alloc(CHAIN_LEN);
 
+#if 0
 	for (i=0; i < CHAIN_LEN; i++) {
 		chain->elems[i].r = chain->elems[i].g = chain->elems[i].b = 0x0f;
 	}
+#elif 0
+	for (i=0; i < CHAIN_LEN; i++) {
+		chain->elems[i] = rand() % 256; //i * 127 / CHAIN_LEN;
+	}
+#else
+	int x, y;
+	for (x=0; x < 5; x++)
+		for (y=0; y < 5; y++)
+			chain->elems[x + y*5] = (x * 5) ^ (y * 5);
+#endif
 
 	chain_update(chain);
+
+	event_signal(&leds_event, true);
 }
 
 static void leds_entry(const struct app_descriptor *app, void *args)
 {
-	int i;
-
 	do {
 		event_wait(&leds_event);
+
+#if 0
+		int i;
 
 		for (i=0; i < CHAIN_LEN; i++) {
 			fixed h = DIVIDE(i, 3 * CHAIN_LEN) + DIVIDE(current_time(), 5000);
@@ -233,10 +397,13 @@ static void leds_entry(const struct app_descriptor *app, void *args)
 
 			hsv_to_rgb(h, s, v, &chain->elems[i].r, &chain->elems[i].g, &chain->elems[i].b);
 		}
+#endif
+		random_invert_direction();
+		palette_roll(palette);
 
 		chain_update(chain);
 
-		thread_sleep(1000/30);
+		thread_sleep(1000/90);
 	} while (true);
 }
 
