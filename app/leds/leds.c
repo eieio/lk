@@ -326,7 +326,7 @@ static void leds_init(const struct app_descriptor *app)
 		palette[(i + 128) * 3 + 2] = (63 - i) * 2;
 		palette[(i + 192) * 3 + 2] = (63 - i) * 2;
 	}
-#elif 0
+#elif 1
 	for (i = 0; i < 128; ++i)
 	{
 		palette[i * 3    ] = i/2;
@@ -340,7 +340,7 @@ static void leds_init(const struct app_descriptor *app)
 		palette[i * 3 + 1] = (255 - i)/2;
 		palette[i * 3 + 2] = (255 - i)/2;
 	}
-#elif 1
+#elif 0
 	for (i = 0; i < 64; ++i)
 	{
 		palette[i        * 3    ] = i;
@@ -370,11 +370,16 @@ static void leds_init(const struct app_descriptor *app)
 	for (i=0; i < CHAIN_LEN; i++) {
 		chain->elems[i] = rand() % 256; //i * 127 / CHAIN_LEN;
 	}
-#else
+#elif 0
 	int x, y;
 	for (x=0; x < 5; x++)
 		for (y=0; y < 5; y++)
 			chain->elems[x + y*5] = (x * 5) ^ (y * 5);
+#elif 1
+	for (i=0; i < CHAIN_LEN / 2; i++) {
+		chain->elems[i] = i * 128 / CHAIN_LEN;
+		chain->elems[i + CHAIN_LEN / 2] = i * 128 / CHAIN_LEN;
+	}
 #endif
 
 	chain_update(chain);
@@ -403,7 +408,7 @@ static void leds_entry(const struct app_descriptor *app, void *args)
 
 		chain_update(chain);
 
-		thread_sleep(1000/90);
+		thread_sleep(1000/60);
 	} while (true);
 }
 
